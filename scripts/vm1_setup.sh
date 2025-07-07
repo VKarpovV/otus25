@@ -1,15 +1,33 @@
 #!/bin/bash
 
-# Установка Docker (если ещё не установлен)
-./scripts/setup_docker.sh
+# Update system
+sudo apt-get update -y
+sudo apt-get upgrade -y
 
-# Настройка NGINX
-./scripts/nginx_setup.sh
+# Install Docker
+sudo apt-get install -y docker.io docker-compose
+sudo systemctl enable docker
+sudo systemctl start docker
 
-# Настройка MySQL Master
-./scripts/mysql_master_setup.sh
+# Install NGINX
+sudo apt-get install -y nginx
+sudo systemctl enable nginx
 
-# Запуск Prometheus
-docker-compose -f ./docker-compose/prometheus.yml up -d
+# Configure NGINX
+sudo cp /home/kva/otus25/configs/nginx/nginx.conf /etc/nginx/nginx.conf
+sudo cp /home/kva/otus25/configs/nginx/sites-available/* /etc/nginx/sites-available/
+sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 
-echo "✅ VM1 настроена!"
+# Install FileBeat
+sudo dpkg -i /home/kva/elk-8.9-deb/filebeat-8.9.1-amd64.deb
+sudo cp /home/kva/otus25/configs/elk/filebeat.yml /etc/filebeat/filebeat.yml
+sudo systemctl enable filebeat
+sudo systemctl start filebeat
+
+# Install ELK stack
+/home/kva/otus25/scripts/elk_setup.sh
+
+# Restart NGINX
+sudo systemctl restart nginx
+
+echo "VM1 setup completed!"
