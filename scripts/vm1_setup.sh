@@ -1,25 +1,15 @@
 #!/bin/bash
 
-# Обновление системы
-sudo apt update && sudo apt upgrade -y
+# Установка Docker (если ещё не установлен)
+./scripts/setup_docker.sh
 
-# Установка Docker
-sudo apt install -y docker.io docker-compose git
-
-# Добавление пользователя kva в группу docker
-sudo usermod -aG docker kva
-
-# Клонирование репозитория
-git clone https://github.com/VKarpovV/otus25.git
-cd otus25
-
-# Установка NGINX
+# Настройка NGINX
 ./scripts/nginx_setup.sh
 
-# Установка MySQL Master
+# Настройка MySQL Master
 ./scripts/mysql_master_setup.sh
 
-# Установка Prometheus
-./scripts/prometheus_setup.sh
+# Запуск Prometheus
+docker-compose -f ./docker-compose/prometheus.yml up -d
 
-echo "Установка на VM1 завершена!"
+echo "✅ VM1 настроена!"
