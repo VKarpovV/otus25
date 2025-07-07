@@ -14,18 +14,22 @@ sudo apt-get install -y nginx
 sudo systemctl enable nginx
 
 # Configure NGINX
-sudo cp /home/kva/otus25/configs/nginx/nginx.conf /etc/nginx/nginx.conf
-sudo cp /home/kva/otus25/configs/nginx/sites-available/* /etc/nginx/sites-available/
-sudo ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
+sudo mkdir -p /etc/nginx/sites-available
+sudo cp /home/kva/otus25/configs/nginx/nginx.conf /etc/nginx/
+sudo cp /home/kva/otus25/configs/nginx/default /etc/nginx/sites-available/
+sudo ln -sf /etc/nginx/sites-available/default /etc/nginx/sites-enabled/
 
 # Install FileBeat
 sudo dpkg -i /home/kva/elk-8.9-deb/filebeat-8.9.1-amd64.deb
-sudo cp /home/kva/otus25/configs/elk/filebeat.yml /etc/filebeat/filebeat.yml
+sudo mkdir -p /etc/filebeat
+sudo cp /home/kva/otus25/configs/elk/filebeat/filebeat.yml /etc/filebeat/
+sudo chown root:root /etc/filebeat/filebeat.yml
+sudo chmod 640 /etc/filebeat/filebeat.yml
 sudo systemctl enable filebeat
 sudo systemctl start filebeat
 
 # Install ELK stack
-/home/kva/otus25/scripts/elk_setup.sh
+bash /home/kva/otus25/scripts/elk_setup.sh
 
 # Restart NGINX
 sudo systemctl restart nginx
