@@ -1,23 +1,13 @@
 #!/bin/bash
 
-# Запуск Grafana в Docker
-docker-compose -f docker-compose/monitoring-compose.yml up -d grafana
+# Install Grafana
+wget https://dl.grafana.com/oss/release/grafana_8.1.5_amd64.deb
+sudo apt-get install -y adduser libfontconfig1
+sudo dpkg -i grafana_8.1.5_amd64.deb
 
-# Ожидание запуска Grafana
-sleep 30
+# Configure Grafana
+sudo cp /home/kva/otus25/configs/grafana/grafana.ini /etc/grafana/grafana.ini
+sudo systemctl enable grafana-server
+sudo systemctl start grafana-server
 
-# Настройка источника данных Prometheus
-curl -X POST "http://localhost:3000/api/datasources" \
-  -u admin:admin \
-  -H "Content-Type: application/json" \
-  --data-binary @configs/grafana/prometheus-datasource.json
-
-# Импорт дашбордов
-for dashboard in configs/grafana/dashboards/*.json; do
-  curl -X POST "http://localhost:3000/api/dashboards/db" \
-    -u admin:admin \
-    -H "Content-Type: application/json" \
-    --data-binary @"$dashboard"
-done
-
-echo "Grafana установлена и настроена"
+echo "Grafana setup completed!"
