@@ -1,20 +1,18 @@
 #!/bin/bash
 
-# Запуск MySQL Master в Docker
-docker-compose -f docker-compose/mysql-compose.yml up -d mysql_master
+# Install MySQL 8
+sudo apt-get install -y mysql-server
 
-# Ожидание запуска MySQL
-sleep 30
+# Configure MySQL Master
+sudo cp /home/kva/otus25/configs/mysql/master.cnf /etc/mysql/mysql.conf.d/replication.cnf
+sudo systemctl restart mysql
 
-# Настройка репликации
-docker exec mysql_master mysql -uroot -prootpassword -e "
-CREATE USER 'replica'@'%' IDENTIFIED WITH mysql_native_password BY 'replica_password';
-GRANT REPLICATION SLAVE ON *.* TO 'replica'@'%';
-FLUSH PRIVILEGES;
-SHOW MASTER STATUS;
-"
+# Create replication user
+sudo mysql -e "CREATE USER 'replicator'@'%' IDENTIFIED WITH mysql_native_password BY 'replicator_password';"
+sudo mysql -e "GRANT REPLICATION SLAVE ON *.* TO 'replicator'@'%';"
+sudo mysql -e "FLUSH PRIVILEGES;"
 
-# Копирование конфигурации
-docker cp mysql_master:/etc/mysql/my.cnf configs/mysql/my-master.cnf
+# Get master status
+sudo mysql -e "SHOW MASTER STATUS;" > /home/kva/mysql_master_status.txt
 
-echo "MySQL Master настроен"
+echo "MySQL Master setup completed!"
