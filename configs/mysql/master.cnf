@@ -1,5 +1,5 @@
 [mysqld]
 server-id = 1
-log_bin = /var/lib/mysql/mysql-bin
-binlog_format = ROW
-binlog_do_db = otus_database
+log_bin = /var/log/mysql/mysql-bin.log
+binlog_do_db = otusdb
+bind-address = 0.0.0.0
