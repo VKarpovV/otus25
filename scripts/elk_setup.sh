@@ -1,18 +1,21 @@
 #!/bin/bash
 
-# Увеличение vm.max_map_count
-sudo sysctl -w vm.max_map_count=262144
-echo "vm.max_map_count=262144" | sudo tee -a /etc/sysctl.conf
+# Install Elasticsearch
+sudo dpkg -i /home/kva/elk-8.9-deb/elasticsearch-8.9.1-amd64.deb
+sudo cp /home/kva/otus25/configs/elk/elasticsearch.yml /etc/elasticsearch/elasticsearch.yml
+sudo systemctl enable elasticsearch
+sudo systemctl start elasticsearch
 
-# Запуск ELK стека
-docker-compose -f docker-compose/elk-compose.yml up -d
+# Install Logstash
+sudo dpkg -i /home/kva/elk-8.9-deb/logstash-8.9.1-amd64.deb
+sudo cp /home/kva/otus25/configs/elk/logstash.conf /etc/logstash/conf.d/
+sudo systemctl enable logstash
+sudo systemctl start logstash
 
-# Ожидание запуска Elasticsearch
-sleep 60
+# Install Kibana
+sudo dpkg -i /home/kva/elk-8.9-deb/kibana-8.9.1-amd64.deb
+sudo cp /home/kva/otus25/configs/elk/kibana.yml /etc/kibana/
+sudo systemctl enable kibana
+sudo systemctl start kibana
 
-# Настройка индексов в Elasticsearch
-curl -X PUT "http://localhost:9200/_index_template/filebeat" \
-  -H "Content-Type: application/json" \
-  --data-binary @configs/elk/filebeat-index-template.json
-
-echo "ELK стек установлен и настроен"
+echo "ELK stack setup completed!"
