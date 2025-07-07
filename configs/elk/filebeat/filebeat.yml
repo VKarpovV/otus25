@@ -1,0 +1,45 @@
+filebeat.inputs:
+- type: filestream
+  enabled: true
+  paths:
+    - /var/log/nginx/access.log
+    - /var/log/nginx/error.log
+  fields:
+    type: nginx
+  processors:
+    - add_host_metadata:
+        when.not.contains.tags: forwarded
+    - add_cloud_metadata: ~
+
+- type: filestream
+  enabled: true
+  paths:
+    - /var/log/apache2/access.log
+    - /var/log/apache2/error.log
+  fields:
+    type: apache
+  processors:
+    - add_host_metadata:
+        when.not.contains.tags: forwarded
+
+- type: filestream
+  enabled: true
+  paths:
+    - /var/log/mysql/error.log
+    - /var/log/mysql/mysql-slow.log
+  fields:
+    type: mysql
+  processors:
+    - add_host_metadata:
+        when.not.contains.tags: forwarded
+
+output.logstash:
+  hosts: ["192.168.140.132:5044", "192.168.140.133:5044", "192.168.140.134:5044"]
+
+logging.level: info
+logging.to_files: true
+logging.files:
+  path: /var/log/filebeat
+  name: filebeat
+  keepfiles: 7
+  permissions: 0644
