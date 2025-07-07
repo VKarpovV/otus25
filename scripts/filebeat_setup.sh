@@ -3,19 +3,21 @@
 # Установка Filebeat
 sudo dpkg -i /home/kva/elk-8.9-deb/filebeat-8.9.1-amd64.deb
 
-# Копирование конфига в зависимости от типа сервера
+# Определение типа сервера и копирование соответствующего конфига
 if [ -f "/etc/nginx/nginx.conf" ]; then
   # Это NGINX сервер
-  sudo cp /home/kva/otus25/configs/elk/filebeat/nginx-filebeat.yml /etc/filebeat/filebeat.yml
+  CONFIG_FILE="nginx-filebeat.yml"
 elif [ -f "/etc/apache2/apache2.conf" ]; then
   # Это Apache сервер
-  sudo cp /home/kva/otus25/configs/elk/filebeat/apache-filebeat.yml /etc/filebeat/filebeat.yml
+  CONFIG_FILE="apache-filebeat.yml"
 else
   # Базовый конфиг
-  sudo cp /home/kva/otus25/configs/elk/filebeat/filebeat.yml /etc/filebeat/filebeat.yml
+  CONFIG_FILE="filebeat.yml"
 fi
 
-sudo chown root:filebeat /etc/filebeat/filebeat.yml
+sudo mkdir -p /etc/filebeat
+sudo cp "/home/kva/otus25/configs/elk/filebeat/${CONFIG_FILE}" /etc/filebeat/filebeat.yml
+sudo chown root:root /etc/filebeat/filebeat.yml
 sudo chmod 640 /etc/filebeat/filebeat.yml
 
 # Настройка модулей
@@ -26,4 +28,4 @@ sudo filebeat setup
 sudo systemctl enable filebeat
 sudo systemctl start filebeat
 
-echo "Filebeat установлен и настроен!"
+echo "Filebeat установлен и настроен с конфигом ${CONFIG_FILE}"
