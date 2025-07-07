@@ -1,0 +1,9 @@
+cluster.name: otus-cluster
+node.name: ${HOSTNAME}
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+network.host: 0.0.0.0
+http.port: 9200
+discovery.seed_hosts: ["192.168.140.132", "192.168.140.133", "192.168.140.134"]
+cluster.initial_master_nodes: ["vm1", "vm2", "vm3"]
+xpack.security.enabled: false
