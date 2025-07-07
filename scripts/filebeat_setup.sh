@@ -1,15 +1,13 @@
 #!/bin/bash
 
-# Установка Filebeat
-curl -L -O https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-8.4.3-amd64.deb
-sudo dpkg -i filebeat-8.4.3-amd64.deb
+# Install Filebeat
+sudo dpkg -i /home/kva/elk-8.9-deb/filebeat-8.9.1-amd64.deb
 
-# Настройка Filebeat
-sudo cp configs/filebeat/filebeat.yml /etc/filebeat/
-sudo filebeat modules enable system nginx apache mysql
-
-# Запуск Filebeat
-sudo systemctl start filebeat
+# Configure Filebeat
+sudo cp /home/kva/otus25/configs/elk/filebeat.yml /etc/filebeat/filebeat.yml
+sudo filebeat modules enable system
+sudo filebeat setup
 sudo systemctl enable filebeat
+sudo systemctl start filebeat
 
-echo "Filebeat установлен и настроен"
+echo "Filebeat setup completed!"
