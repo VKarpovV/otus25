@@ -1,5 +1,0 @@
-[mysqld]
-server-id = 1
-log_bin = /var/log/mysql/mysql-bin.log
-binlog_do_db = otusdb
-bind-address = 0.0.0.0
