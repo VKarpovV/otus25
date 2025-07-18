@@ -31,10 +31,14 @@ sudo docker compose up -d apache2 mysql_slave
 echo "Ожидание запуска MySQL Slave (40 секунд)..."
 sleep 40
 
-# Проверка контейнера
-if ! sudo docker ps | grep -q "mysql_slave"; then
-    echo "ОШИБКА: Контейнер mysql_slave не запущен"
-    echo "Логи контейнера:"
+# Получаем полное имя контейнера
+MYSQL_CONTAINER=$(sudo docker ps --filter "name=mysql_slave" --format "{{.Names}}")
+
+if [ -z "$MYSQL_CONTAINER" ]; then
+    echo "ОШИБКА: Контейнер mysql_slave не найден"
+    echo "Список контейнеров:"
+    sudo docker ps -a
+    echo "Логи:"
     sudo docker logs $(sudo docker ps -aqf "name=mysql_slave")
     exit 1
 fi
@@ -44,7 +48,7 @@ read -p "Введите MASTER_LOG_FILE (из вывода VM1): " MASTER_LOG_FI
 read -p "Введите MASTER_LOG_POS (из вывода VM1): " MASTER_LOG_POS
 
 # Настройка репликации
-sudo docker exec mysql_slave mysql -uroot -proot_password -e "
+sudo docker exec $MYSQL_CONTAINER mysql -uroot -proot_password -e "
 STOP SLAVE;
 CHANGE MASTER TO
 MASTER_HOST='192.168.140.132',
@@ -56,7 +60,7 @@ START SLAVE;"
 
 # Проверка статуса репликации
 sleep 5
-SLAVE_STATUS=$(sudo docker exec mysql_slave mysql -uroot -proot_password -e "SHOW SLAVE STATUS\G" 2>/dev/null)
+SLAVE_STATUS=$(sudo docker exec $MYSQL_CONTAINER mysql -uroot -proot_password -e "SHOW SLAVE STATUS\G" 2>/dev/null)
 echo "========================================"
 echo "SLAVE STATUS:"
 echo "$SLAVE_STATUS" | grep -E "Slave_IO_Running|Slave_SQL_Running|Last_IO_Error|Last_SQL_Error"
