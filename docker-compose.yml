@@ -86,6 +86,69 @@ services:
       - elk_data:/var/lib/elasticsearch
     networks:
       - backend
+  
+  apache_exporter:
+    image: lusotycoon/apache-exporter:latest
+    network_mode: host  
+    command:
+      - '--scrape_uri=http://localhost:80/server-status?auto'
+      - '--port=9117'
+      - '--insecure'  
+    restart: unless-stopped
+
+  mysql_exporter:
+    image: prom/mysqld-exporter:latest
+    network_mode: host  
+    environment:
+      DATA_SOURCE_NAME: "exporter:exporterpassword@(localhost:3306)/"
+    command:
+      - '--web.listen-address=0.0.0.0:9104'
+    restart: unless-stopped
+
+  nginx_exporter:
+    image: nginx/nginx-prometheus-exporter:latest
+    network_mode: host  
+    command:
+      - '-nginx.scrape-uri=http://localhost:80/stub_status'
+      - '-web.listen-address=0.0.0.0:9113'
+    restart: unless-stopped
+    
+  node_exporter:
+    image: prom/node-exporter:latest
+    network_mode: host
+    volumes:
+      - /:/host:ro,rslave
+    command: 
+      - '--path.rootfs=/host'
+      - '--web.listen-address=0.0.0.0:9100'
+    restart: unless-stopped
+    
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.47.0
+    container_name: cadvisor
+    restart: always
+    network_mode: host
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    privileged: true
+    command:
+      - '--http_server_ip=0.0.0.0'
+      - '--port=8080'
+  
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:8.13.0
+    user: root
+    volumes:
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    depends_on:
+      - apache1
+      - mysql_master
+      - nginx
 
 networks:
   backend:
