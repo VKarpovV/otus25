@@ -22,6 +22,7 @@ binlog_do_db = mydb" | sudo tee /etc/mysql/conf.d/replication.cnf
 sudo ufw allow from 192.168.140.0/24 to any port 3306
 
 # Клонирование репозитория
+udo rm -rf otus25
 git clone https://github.com/VKarpovV/otus25.git
 cd otus25
 
@@ -29,8 +30,11 @@ cd otus25
 sudo docker compose up -d nginx apache1 mysql_master
 
 # Ожидание запуска MySQL
-echo "Ожидание запуска MySQL Master (40 секунд)..."
-sleep 40
+echo "Ожидание запуска MySQL Master (20 секунд)..."
+sleep 20
+
+# Кастомизация Apache1
+sudo docker exec otus25-apache1-1 bash -c "echo 'This is Apache1 on VM1' > /usr/local/apache2/htdocs/index.html"
 
 # Получаем полное имя контейнера
 MYSQL_CONTAINER=$(sudo docker ps --filter "name=mysql_master" --format "{{.Names}}")
