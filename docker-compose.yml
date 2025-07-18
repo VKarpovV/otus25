@@ -16,7 +16,7 @@ services:
 
   mysql_master:
     image: mysql:8.0
-    container_name: mysql_master
+        container_name: mysql_master
     ports:
     - "3306:3306"    
     environment:
@@ -39,6 +39,7 @@ services:
 
   mysql_slave:
     image: mysql:8.0
+    container_name: mysql_slave
     environment:
       MYSQL_ROOT_PASSWORD: root_password
       MYSQL_MASTER_HOST: 192.168.140.132
