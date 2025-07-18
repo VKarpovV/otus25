@@ -110,22 +110,8 @@ sudo docker run -d --name node_exporter --net=host \
   --path.rootfs=/host \
   --web.listen-address=0.0.0.0:9100
 
-# cAdvisor
-sudo docker run -d --name cadvisor --net=host \
-  -v /:/rootfs:ro \
-  -v /var/run:/var/run:ro \
-  -v /sys:/sys:ro \
-  -v /var/lib/docker/:/var/lib/docker:ro \
-  -v /dev/disk/:/dev/disk:ro \
-  --privileged \
-  gcr.io/cadvisor/cadvisor:latest \
-  --http_server_ip=0.0.0.0 \
-  --port=8080
-
 echo "Проверка работы экспортеров..."
 sleep 10  # Даем время для запуска
 
 echo "Node Exporter:"
 curl -s http://localhost:9100/metrics | head -5
-echo "cAdvisor:"
-curl -s http://localhost:8080/metrics | head -5
