@@ -48,19 +48,26 @@ read -p "Введите MASTER_LOG_FILE (из вывода VM1): " MASTER_LOG_FI
 read -p "Введите MASTER_LOG_POS (из вывода VM1): " MASTER_LOG_POS
 
 # Настройка репликации
-sudo docker exec $MYSQL_CONTAINER mysql -uroot -proot_password -e "
+sudo docker exec mysql_slave mysql -uroot -proot_password -e "
 STOP SLAVE;
+RESET SLAVE ALL;
 CHANGE MASTER TO
 MASTER_HOST='192.168.140.132',
 MASTER_USER='repl_user',
 MASTER_PASSWORD='repl_password',
 MASTER_LOG_FILE='$MASTER_LOG_FILE',
-MASTER_LOG_POS=$MASTER_LOG_POS;
+MASTER_LOG_POS=$MASTER_LOG_POS,
+MASTER_CONNECT_RETRY=10,
+GET_MASTER_PUBLIC_KEY=1;
 START SLAVE;"
 
 # Проверка статуса репликации
-sleep 5
-SLAVE_STATUS=$(sudo docker exec $MYSQL_CONTAINER mysql -uroot -proot_password -e "SHOW SLAVE STATUS\G" 2>/dev/null)
+sleep 3
+echo "Проверка соединения с Master:"
+sudo docker exec mysql_slave mysql -h 192.168.140.132 -u repl_user -prepl_password -e "SELECT 1;"
+
+echo "Статус репликации:"
+sudo docker exec mysql_slave mysql -uroot -proot_password -e "SHOW SLAVE STATUS\G" | grep -E 'Running|Error'
 echo "========================================"
 echo "SLAVE STATUS:"
 echo "$SLAVE_STATUS" | grep -E "Slave_IO_Running|Slave_SQL_Running|Last_IO_Error|Last_SQL_Error"
