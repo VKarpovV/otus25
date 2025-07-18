@@ -24,25 +24,26 @@
    ```bash
    git clone https://github.com/VKarpovV/otus25.git
 Настройка VM1:
-bash
 
 cd otus25
+
 chmod +x setup_vm1.sh
+
 ./setup_vm1.sh
 
 Сохраните значения MASTER_LOG_FILE и MASTER_LOG_POS из вывода.
 
 Настройка VM2:
-bash
 
 cd otus25
+
 chmod +x setup_vm2.sh
+
 ./setup_vm2.sh
 
 Введите сохраненные значения MASTER_LOG_FILE и MASTER_LOG_POS.
 
 Настройка VM3:
-bash
 
     cd otus25
     chmod +x setup_vm3.sh
