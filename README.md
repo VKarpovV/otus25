@@ -45,9 +45,11 @@ chmod +x setup_vm2.sh
 
 Настройка VM3:
 
-    cd otus25
-    chmod +x setup_vm3.sh
-    ./setup_vm3.sh
+cd otus25
+
+chmod +x setup_vm3.sh
+
+./setup_vm3.sh
 
 Проверка работы
 
