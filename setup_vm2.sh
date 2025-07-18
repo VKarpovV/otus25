@@ -31,6 +31,13 @@ sudo docker compose up -d apache2 mysql_slave
 echo "Ожидание запуска MySQL Slave (40 секунд)..."
 sleep 40
 
+# Проверка контейнера
+if ! sudo docker ps | grep -q "mysql_slave"; then
+    echo "ОШИБКА: Контейнер mysql_slave не запущен"
+    sudo docker logs mysql_slave
+    exit 1
+fi
+
 # Получаем полное имя контейнера
 MYSQL_CONTAINER=$(sudo docker ps --filter "name=mysql_slave" --format "{{.Names}}")
 
@@ -62,7 +69,7 @@ GET_MASTER_PUBLIC_KEY=1;
 START SLAVE;"
 
 # Проверка статуса репликации
-sleep 3
+sleep 5
 echo "Проверка соединения с Master:"
 sudo docker exec mysql_slave mysql -h 192.168.140.132 -u repl_user -prepl_password -e "SELECT 1;"
 
