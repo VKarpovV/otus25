@@ -49,7 +49,8 @@ services:
       MYSQL_MASTER_PORT: 3306
     volumes:
       - mysql_slave_data:/var/lib/mysql
-    command: --server-id=2 --relay-log=mysql-relay-bin --read-only=1
+      - ./slave.cnf:/etc/mysql/conf.d/replication.cnf
+    command: --server-id=2 --relay-log=mysql-relay-bin --read-only=1 --skip-slave-start
     networks:
       - backend
 
