@@ -92,18 +92,6 @@ sudo docker run -d --name node_exporter --net=host \
   --path.rootfs=/host \
   --web.listen-address=0.0.0.0:9100
 
-# cAdvisor
-sudo docker run -d --name cadvisor --net=host \
-  -v /:/rootfs:ro \
-  -v /var/run:/var/run:ro \
-  -v /sys:/sys:ro \
-  -v /var/lib/docker/:/var/lib/docker:ro \
-  -v /dev/disk/:/dev/disk:ro \
-  --privileged \
-  gcr.io/cadvisor/cadvisor:latest \
-  --http_server_ip=0.0.0.0 \
-  --port=8080
-
 # Apache Exporter
 sudo docker run -d --name apache_exporter --net=host \
   lusotycoon/apache-exporter:latest \
@@ -126,6 +114,4 @@ echo "Apache Exporter:"
 curl -s http://localhost:9117/metrics | head -5
 echo "MySQL Exporter:"
 curl -s http://localhost:9104/metrics | head -5
-echo "cAdvisor:"
-curl -s http://localhost:8080/metrics | head -5
 
