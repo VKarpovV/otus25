@@ -51,7 +51,7 @@ GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%';
 FLUSH PRIVILEGES;"
 
 # Получение статуса мастера
-MASTER_STATUS=$(sudo docker exec mysql_master mysql -uroot -proot_password -e "SHOW MASTER STATUS" 2>/dev/null)
+MASTER_STATUS=$(sudo docker exec mysql_master mysql -uroot -proot_password -e "SHOW MASTER STATUS\G")
 echo "========================================"
 echo "MASTER STATUS:"
 echo "$MASTER_STATUS"
