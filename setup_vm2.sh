@@ -92,26 +92,10 @@ sudo docker run -d --name node_exporter --net=host \
   --path.rootfs=/host \
   --web.listen-address=0.0.0.0:9100
 
-# Apache Exporter
-sudo docker run -d --name apache_exporter --net=host \
-  lusotycoon/apache-exporter:latest \
-  --scrape_uri=http://localhost:80/server-status?auto \
-  --port=9117 \
-  --insecure
-
-# MySQL Exporter
-sudo docker run -d --name mysql_exporter --net=host \
-  -e DATA_SOURCE_NAME="exporter:exporterpassword@(localhost:3306)/" \
-  prom/mysqld-exporter:latest \
-  --web.listen-address=0.0.0.0:9104
-
 echo "Проверка работы экспортеров..."
 sleep 10  # Даем время для запуска
 
 echo "Node Exporter:"
 curl -s http://localhost:9100/metrics | head -5
-echo "Apache Exporter:"
-curl -s http://localhost:9117/metrics | head -5
-echo "MySQL Exporter:"
-curl -s http://localhost:9104/metrics | head -5
+
 
