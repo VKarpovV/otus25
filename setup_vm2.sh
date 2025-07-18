@@ -21,6 +21,7 @@ log-slave-updates = 1
 read-only = 1" | sudo tee /etc/mysql/conf.d/replication.cnf
 
 # Клонирование репозитория
+sudo rm -rf otus25
 git clone https://github.com/VKarpovV/otus25.git
 cd otus25
 
@@ -28,8 +29,11 @@ cd otus25
 sudo docker compose up -d apache2 mysql_slave
 
 # Ожидание запуска MySQL
-echo "Ожидание запуска MySQL Slave (40 секунд)..."
-sleep 40
+echo "Ожидание запуска MySQL Slave (20 секунд)..."
+sleep 20
+
+# Кастомизация Apache2
+sudo docker exec otus25-apache2-1 bash -c "echo 'This is Apache2 on VM2' > /usr/local/apache2/htdocs/index.html"
 
 # Проверка контейнера
 if ! sudo docker ps | grep -q "mysql_slave"; then
