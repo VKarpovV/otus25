@@ -32,22 +32,26 @@ sudo docker compose up -d nginx apache1 mysql_master
 echo "Ожидание запуска MySQL Master (40 секунд)..."
 sleep 40
 
-# Проверка контейнера
-if ! sudo docker ps | grep -q "mysql_master"; then
-    echo "ОШИБКА: Контейнер mysql_master не запущен"
-    echo "Логи контейнера:"
+# Получаем полное имя контейнера
+MYSQL_CONTAINER=$(sudo docker ps --filter "name=mysql_master" --format "{{.Names}}")
+
+if [ -z "$MYSQL_CONTAINER" ]; then
+    echo "ОШИБКА: Контейнер mysql_master не найден"
+    echo "Список контейнеров:"
+    sudo docker ps -a
+    echo "Логи:"
     sudo docker logs $(sudo docker ps -aqf "name=mysql_master")
     exit 1
 fi
 
 # Настройка репликации
-sudo docker exec mysql_master mysql -uroot -proot_password -e "
+sudo docker exec $MYSQL_CONTAINER mysql -uroot -proot_password -e "
 CREATE USER IF NOT EXISTS 'repl_user'@'%' IDENTIFIED BY 'repl_password';
 GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%';
 FLUSH PRIVILEGES;"
 
 # Получение статуса мастера
-MASTER_STATUS=$(sudo docker exec mysql_master mysql -uroot -proot_password -e "SHOW MASTER STATUS" 2>/dev/null)
+MASTER_STATUS=$(sudo docker exec $MYSQL_CONTAINER mysql -uroot -proot_password -e "SHOW MASTER STATUS" 2>/dev/null)
 echo "========================================"
 echo "MASTER STATUS:"
 echo "$MASTER_STATUS"
