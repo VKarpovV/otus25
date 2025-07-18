@@ -22,7 +22,7 @@ binlog_do_db = mydb" | sudo tee /etc/mysql/conf.d/replication.cnf
 sudo ufw allow from 192.168.140.0/24 to any port 3306
 
 # Клонирование репозитория
-udo rm -rf otus25
+sudo rm -rf otus25
 git clone https://github.com/VKarpovV/otus25.git
 cd otus25
 
@@ -35,6 +35,40 @@ sleep 20
 
 # Кастомизация Apache1
 sudo docker exec otus25-apache1-1 bash -c "echo 'This is Apache1 on VM1' > /usr/local/apache2/htdocs/index.html"
+
+# Экспорта метрик Apache
+echo "Настройка Apache для экспорта метрик..."
+sudo docker exec otus25-apache1-1 bash -c "echo 'LoadModule status_module modules/mod_status.so' >> /usr/local/apache2/conf/httpd.conf"
+sudo docker exec otus25-apache1-1 bash -c "echo '<Location /server-status>' >> /usr/local/apache2/conf/httpd.conf"
+sudo docker exec otus25-apache1-1 bash -c "echo '    SetHandler server-status' >> /usr/local/apache2/conf/httpd.conf"
+sudo docker exec otus25-apache1-1 bash -c "echo '    Require all granted' >> /usr/local/apache2/conf/httpd.conf"
+sudo docker exec otus25-apache1-1 bash -c "echo '</Location>' >> /usr/local/apache2/conf/httpd.conf"
+sudo docker exec otus25-apache1-1 bash -c "echo 'ExtendedStatus On' >> /usr/local/apache2/conf/httpd.conf"
+sudo docker exec otus25-apache1-1 apachectl restart
+
+
+# Настройка Nginx для экспорта метрик
+echo "Настройка Nginx для экспорта метрик..."
+sudo docker exec otus25-nginx-1 bash -c "echo 'server {' > /etc/nginx/conf.d/stub_status.conf"
+sudo docker exec otus25-nginx-1 bash -c "echo '    listen 80;' >> /etc/nginx/conf.d/stub_status.conf"
+sudo docker exec otus25-nginx-1 bash -c "echo '    location /stub_status {' >> /etc/nginx/conf.d/stub_status.conf"
+sudo docker exec otus25-nginx-1 bash -c "echo '        stub_status;' >> /etc/nginx/conf.d/stub_status.conf"
+sudo docker exec otus25-nginx-1 bash -c "echo '        allow all;' >> /etc/nginx/conf.d/stub_status.conf"
+sudo docker exec otus25-nginx-1 bash -c "echo '    }' >> /etc/nginx/conf.d/stub_status.conf"
+sudo docker exec otus25-nginx-1 bash -c "echo '}' >> /etc/nginx/conf.d/stub_status.conf"
+sudo docker exec otus25-nginx-1 nginx -s reload
+
+# Запуск экспортеров
+echo "Запуск экспортеров метрик..."
+sudo docker compose up -d node-exporter cadvisor apache-exporter mysql-exporter nginx-exporter
+
+
+echo "Проверка работы экспортеров:"
+echo "Node exporter:    curl http://localhost:9100/metrics"
+echo "cAdvisor:         curl http://localhost:8080/metrics"
+echo "Apache exporter:  curl http://localhost:9117/metrics"
+echo "MySQL exporter:   curl http://localhost:9104/metrics"
+echo "Nginx exporter:   curl http://localhost:9113/metrics"
 
 # Получаем полное имя контейнера
 MYSQL_CONTAINER=$(sudo docker ps --filter "name=mysql_master" --format "{{.Names}}")
@@ -64,3 +98,57 @@ echo "Сохраните значения File и Position для VM2"
 echo "Пример:"
 echo "MASTER_LOG_FILE: mysql-bin.000001"
 echo "MASTER_LOG_POS: 157"
+
+echo "Запуск экспортеров мониторинга..."
+
+# Node Exporter
+sudo docker run -d --name node_exporter --net=host \
+  -v /:/host:ro,rslave \
+  prom/node-exporter:latest \
+  --path.rootfs=/host \
+  --web.listen-address=0.0.0.0:9100
+
+# cAdvisor
+sudo docker run -d --name cadvisor --net=host \
+  -v /:/rootfs:ro \
+  -v /var/run:/var/run:ro \
+  -v /sys:/sys:ro \
+  -v /var/lib/docker/:/var/lib/docker:ro \
+  -v /dev/disk/:/dev/disk:ro \
+  --privileged \
+  gcr.io/cadvisor/cadvisor:latest \
+  --http_server_ip=0.0.0.0 \
+  --port=8080
+
+# Apache Exporter
+sudo docker run -d --name apache_exporter --net=host \
+  lusotycoon/apache-exporter:latest \
+  --scrape_uri=http://localhost:80/server-status?auto \
+  --port=9117 \
+  --insecure
+
+# MySQL Exporter
+sudo docker run -d --name mysql_exporter --net=host \
+  -e DATA_SOURCE_NAME="exporter:exporterpassword@(localhost:3306)/" \
+  prom/mysqld-exporter:latest \
+  --web.listen-address=0.0.0.0:9104
+
+# Nginx Exporter
+sudo docker run -d --name nginx_exporter --net=host \
+  nginx/nginx-prometheus-exporter:latest \
+  -nginx.scrape-uri=http://localhost:80/stub_status \
+  -web.listen-address=0.0.0.0:9113
+
+echo "Проверка работы экспортеров..."
+sleep 10  # Даем время для запуска
+
+echo "Node Exporter:"
+curl -s http://localhost:9100/metrics | head -5
+echo "Apache Exporter:"
+curl -s http://localhost:9117/metrics | head -5
+echo "MySQL Exporter:"
+curl -s http://localhost:9104/metrics | head -5
+echo "Nginx Exporter:"
+curl -s http://localhost:9113/metrics | head -5
+echo "cAdvisor:"
+curl -s http://localhost:8080/metrics | head -5
