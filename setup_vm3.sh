@@ -22,13 +22,110 @@ cd otus25
 sudo docker compose up -d prometheus grafana elk
 
 # Настройка Grafana
-echo "Ожидание запуска Grafana (40 секунд)..."
-sleep 40
+echo "Ожидание запуска Grafana (30 секунд)..."
+sleep 30
 sudo docker exec grafana grafana-cli plugins install grafana-piechart-panel
+sudo docker exec grafana grafana-cli plugins install alexanderzobnin-zabbix-app
 sudo docker restart grafana
 
+# Создание источника данных Prometheus
+curl -X POST "http://admin:admin@localhost:3000/api/datasources" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Prometheus",
+    "type": "prometheus",
+    "url": "http://prometheus:9090",
+    "access": "proxy",
+    "isDefault": true
+  }'
+  
+# Импорт стандартных дашбордов
+echo "Импорт дашбордов в Grafana..."
+
+# Node Exporter Dashboard
+curl -X POST "http://admin:admin@localhost:3000/api/dashboards/db" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "dashboard": {
+      "id": null,
+      "uid": null,
+      "title": "Node Exporter",
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "version": 0,
+      "refresh": "30s"
+    },
+    "folderId": 0,
+    "overwrite": false
+  }'
+
+# MySQL Dashboard
+curl -X POST "http://admin:admin@localhost:3000/api/dashboards/db" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "dashboard": {
+      "id": null,
+      "uid": null,
+      "title": "MySQL",
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "version": 0,
+      "refresh": "30s"
+    },
+    "folderId": 0,
+    "overwrite": false
+  }'
+
+# Apache Dashboard
+curl -X POST "http://admin:admin@localhost:3000/api/dashboards/db" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "dashboard": {
+      "id": null,
+      "uid": null,
+      "title": "Apache",
+      "timezone": "browser",
+      "schemaVersion": 16,
+      "version": 0,
+      "refresh": "30s"
+    },
+    "folderId": 0,
+    "overwrite": false
+  }'
+
+echo "Дашборды успешно импортированы"  
+  
 echo "Настройка завершена на VM3"
 echo "Доступ к сервисам:"
 echo "- Prometheus: http://192.168.140.134:9090"
 echo "- Grafana: http://192.168.140.134:3000 (admin/admin)"
 echo "- Kibana: http://192.168.140.134:5601"
+
+echo "Запуск экспортеров мониторинга..."
+
+# Node Exporter
+sudo docker run -d --name node_exporter --net=host \
+  -v /:/host:ro,rslave \
+  prom/node-exporter:latest \
+  --path.rootfs=/host \
+  --web.listen-address=0.0.0.0:9100
+
+# cAdvisor
+sudo docker run -d --name cadvisor --net=host \
+  -v /:/rootfs:ro \
+  -v /var/run:/var/run:ro \
+  -v /sys:/sys:ro \
+  -v /var/lib/docker/:/var/lib/docker:ro \
+  -v /dev/disk/:/dev/disk:ro \
+  --privileged \
+  gcr.io/cadvisor/cadvisor:latest \
+  --http_server_ip=0.0.0.0 \
+  --port=8080
+
+echo "Проверка работы экспортеров..."
+sleep 10  # Даем время для запуска
+
+echo "Node Exporter:"
+curl -s http://localhost:9100/metrics | head -5
+echo "cAdvisor:"
+curl -s http://localhost:8080/metrics | head -5
