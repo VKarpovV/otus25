@@ -28,7 +28,8 @@ services:
       MYSQL_REPLICATION_PASSWORD: repl_password
     volumes:
       - mysql_master_data:/var/lib/mysql
-    command: --server-id=1 --log-bin=mysql-bin --binlog_do_db=mydb
+      - ./master.cnf:/etc/mysql/conf.d/replication.cnf
+    command: --server-id=1 --log-bin=mysql-bin --binlog_do_db=mydb --bind-address=0.0.0.0
     networks:
       - backend
 
