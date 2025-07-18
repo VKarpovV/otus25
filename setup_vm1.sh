@@ -45,13 +45,13 @@ if [ -z "$MYSQL_CONTAINER" ]; then
 fi
 
 # Настройка репликации
-sudo docker exec $MYSQL_CONTAINER mysql -uroot -proot_password -e "
-CREATE USER IF NOT EXISTS 'repl_user'@'%' IDENTIFIED BY 'repl_password';
+sudo docker exec mysql_master mysql -uroot -proot_password -e "
+ALTER USER 'repl_user'@'%' IDENTIFIED WITH mysql_native_password BY 'repl_password';
 GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%';
 FLUSH PRIVILEGES;"
 
 # Получение статуса мастера
-MASTER_STATUS=$(sudo docker exec $MYSQL_CONTAINER mysql -uroot -proot_password -e "SHOW MASTER STATUS" 2>/dev/null)
+MASTER_STATUS=$(sudo docker exec mysql_master mysql -uroot -proot_password -e "SHOW MASTER STATUS" 2>/dev/null)
 echo "========================================"
 echo "MASTER STATUS:"
 echo "$MASTER_STATUS"
