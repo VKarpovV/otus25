@@ -59,40 +59,6 @@ curl -X POST "http://admin:admin@localhost:3000/api/dashboards/db" \
     "overwrite": false
   }'
 
-# MySQL Dashboard
-curl -X POST "http://admin:admin@localhost:3000/api/dashboards/db" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "dashboard": {
-      "id": null,
-      "uid": null,
-      "title": "MySQL",
-      "timezone": "browser",
-      "schemaVersion": 16,
-      "version": 0,
-      "refresh": "30s"
-    },
-    "folderId": 0,
-    "overwrite": false
-  }'
-
-# Apache Dashboard
-curl -X POST "http://admin:admin@localhost:3000/api/dashboards/db" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "dashboard": {
-      "id": null,
-      "uid": null,
-      "title": "Apache",
-      "timezone": "browser",
-      "schemaVersion": 16,
-      "version": 0,
-      "refresh": "30s"
-    },
-    "folderId": 0,
-    "overwrite": false
-  }'
-
 echo "Дашборды успешно импортированы"  
   
 echo "Настройка завершена на VM3"
