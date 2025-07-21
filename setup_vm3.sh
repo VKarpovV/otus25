@@ -93,7 +93,7 @@ while ! curl -s http://localhost:5601 >/dev/null; do
     sleep 5
 done
 
-# Создаем индекс-паттерн для логов Apache
+# Создаем индекс-паттерны
 curl -u elastic:changeme -X POST "http://localhost:5601/api/saved_objects/index-pattern" \
   -H 'kbn-xsrf: true' \
   -H 'Content-Type: application/json' \
@@ -103,6 +103,16 @@ curl -u elastic:changeme -X POST "http://localhost:5601/api/saved_objects/index-
       "timeFieldName": "@timestamp"
     }
   }'
+
+curl -u elastic:changeme -X POST "http://localhost:5601/api/saved_objects/index-pattern" \
+  -H 'kbn-xsrf: true' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "attributes": {
+      "title": "filebeat-nginx-*",
+      "timeFieldName": "@timestamp"
+    }
+  }'  
 
 # Создаем dashboard для мониторинга
 curl -u elastic:changeme -X POST "http://localhost:5601/api/saved_objects/_import" \
