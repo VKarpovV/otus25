@@ -1,9 +1,20 @@
 filebeat.inputs:
-- type: container
-  paths: 
-    - '/var/lib/docker/containers/*/*.log'
-  processors:
-    - add_docker_metadata: ~
+- type: log
+  enabled: true
+  paths:
+    - /var/log/apache2/*.log
 
 output.logstash:
   hosts: ["192.168.140.134:5044"]
+
+setup.ilm.enabled: false
+setup.template.name: "apache"
+setup.template.pattern: "apache-*"
+
+- module: nginx
+  access:
+    enabled: true
+    var.paths: ["/var/log/nginx/access.log*"]
+  error:
+    enabled: true
+    var.paths: ["/var/log/nginx/error.log*"]
