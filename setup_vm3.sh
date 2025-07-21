@@ -81,3 +81,25 @@ sleep 10  # Даем время для запуска
 
 echo "Node Exporter:"
 curl -s http://localhost:9100/metrics | head -5
+
+# Ожидаем готовности Elasticsearch
+while ! curl -s http://localhost:9200 >/dev/null; do
+    sleep 5
+done
+
+# Создаем индекс для логов Apache
+curl -u elastic:elasticpass -X PUT "http://localhost:9200/apache-logs" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0
+  },
+  "mappings": {
+    "properties": {
+      "@timestamp": { "type": "date" },
+      "message": { "type": "text" },
+      "host": { "type": "keyword" },
+      "source": { "type": "keyword" }
+    }
+  }
+}'
