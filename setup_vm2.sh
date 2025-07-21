@@ -79,9 +79,6 @@ echo "========================================"
 echo "SLAVE STATUS:"
 echo "$SLAVE_STATUS" | grep -E "Slave_IO_Running|Slave_SQL_Running|Last_IO_Error|Last_SQL_Error"
 echo "========================================"
-echo "Убедитесь, что:"
-echo "Slave_IO_Running: Yes"
-echo "Slave_SQL_Running: Yes"
 
 echo "Запуск экспортеров мониторинга..."
 
