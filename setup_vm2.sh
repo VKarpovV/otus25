@@ -98,4 +98,21 @@ sleep 10  # Даем время для запуска
 echo "Node Exporter:"
 curl -s http://localhost:9100/metrics | head -5
 
+# Установка Filebeat
+sudo apt install -y filebeat
 
+# Конфигурация Filebeat
+sudo tee /etc/filebeat/filebeat.yml > /dev/null <<EOL
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/apache2/*.log
+
+output.logstash:
+  hosts: ["192.168.140.134:5044"]
+EOL
+
+# Запуск Filebeat
+sudo systemctl enable filebeat
+sudo systemctl start filebeat
