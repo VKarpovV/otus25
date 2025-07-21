@@ -87,19 +87,29 @@ while ! curl -s http://localhost:9200 >/dev/null; do
     sleep 5
 done
 
-# Создаем индекс для логов Apache
-curl -u elastic:elasticpass -X PUT "http://localhost:9200/apache-logs" -H 'Content-Type: application/json' -d'
-{
-  "settings": {
-    "number_of_shards": 1,
-    "number_of_replicas": 0
-  },
-  "mappings": {
-    "properties": {
-      "@timestamp": { "type": "date" },
-      "message": { "type": "text" },
-      "host": { "type": "keyword" },
-      "source": { "type": "keyword" }
+# Ожидаем готовности Kibana
+echo "Ожидание запуска Kibana (2 минуты)..."
+while ! curl -s http://localhost:5601 >/dev/null; do
+    sleep 5
+done
+
+# Создаем индекс-паттерн для логов Apache
+curl -u elastic:changeme -X POST "http://localhost:5601/api/saved_objects/index-pattern" \
+  -H 'kbn-xsrf: true' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "attributes": {
+      "title": "filebeat-*",
+      "timeFieldName": "@timestamp"
     }
-  }
-}'
+  }'
+
+# Создаем dashboard для мониторинга
+curl -u elastic:changeme -X POST "http://localhost:5601/api/saved_objects/_import" \
+  -H "kbn-xsrf: true" \
+  --form file=@/usr/share/kibana/config/kibana_default.json
+
+echo "Kibana настроена:"
+echo "URL: http://192.168.140.134:5601"
+echo "Логин: elastic"
+echo "Пароль: changeme"
