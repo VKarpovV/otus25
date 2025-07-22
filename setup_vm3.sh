@@ -102,4 +102,4 @@ curl -u elastic:elasticpass -X PUT "http://localhost:9200/apache-logs" -H 'Conte
       "source": { "type": "keyword" }
     }
   }
-}
+}'
