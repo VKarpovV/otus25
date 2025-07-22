@@ -82,6 +82,7 @@ services:
       - "5044:5044"
     environment:
       - ES_JAVA_OPTS=-Xms1g -Xmx1g
+      - ELASTIC_PASSWORD=elasticpass
     volumes:
       - elk_data:/var/lib/elasticsearch
       - ./logstash.conf:/etc/logstash/conf.d/10-apache.conf
