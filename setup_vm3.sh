@@ -103,3 +103,4 @@ curl -u elastic:elasticpass -X PUT "http://localhost:9200/apache-logs" -H 'Conte
     }
   }
 }'
+sudo docker exec otus25-elk-1 curl -X POST "http://localhost:9200/apache-logs-$(date +%Y.%m.%d)/_doc" -u elastic:changeme -H 'Content-Type: application/json' -d '{"message":"apache start","@timestamp":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}' &> /dev/null
