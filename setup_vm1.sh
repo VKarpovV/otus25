@@ -60,7 +60,7 @@ sudo docker exec otus25-nginx-1 nginx -s reload
 
 # Запуск экспортеров
 echo "Запуск экспортеров метрик..."
-sudo docker compose up -d node-exporter cadvisor apache-exporter mysql-exporter nginx-exporter
+sudo docker compose up -d node-exporter apache-exporter nginx-exporter
 
 
 echo "Проверка работы экспортеров:"
